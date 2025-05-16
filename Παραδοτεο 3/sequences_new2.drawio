@@ -910,7 +910,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="nmxxaxLxRclqP2Jkk7KO" name="user-case-2">
-    <mxGraphModel dx="2686" dy="1656" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="3590" dy="1960" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -996,7 +996,7 @@
           <mxGeometry x="980" y="50" width="110" height="1568" as="geometry" />
         </mxCell>
         <mxCell id="W0hB3qgCP2MaGVuihN0Q-13" value="Use Case 2 : Τοποθεσία Ακινήτου" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=20;fontStyle=1" parent="1" vertex="1">
-          <mxGeometry x="340" y="-10" width="333" height="36" as="geometry" />
+          <mxGeometry x="93" y="-12" width="333" height="36" as="geometry" />
         </mxCell>
         <mxCell id="j9nWEXjU1d6qoBBUb-ko-1" value="Owner" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=16;" parent="1" vertex="1" connectable="0">
           <mxGeometry x="-359.9964705882351" y="30" as="geometry">
