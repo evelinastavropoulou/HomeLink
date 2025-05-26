@@ -1,0 +1,91 @@
+@startuml
+actor "Owner" as Owner
+participant "MainScreen" as MainScreen
+participant "CreateListingScreen" as CreateListingScreen
+participant "CreateListingManager" as CreateListingManager
+participant "ManageDB" as ManageDB
+participant "Listing" as Listing
+participant "Message" as Message
+participant "RentalInterest" as RentalInterest
+participant "CreateListingForm" as CreateListingForm
+participant "UploadPhotoForm" as UploadPhotoForm
+participant "LocationManager" as LocationManager
+participant "Photos" as Photos
+
+
+Owner -> MainScreen : onCreateListingClicked()
+CreateListingManager -> ManageDB : getListingsForOwner(ownerID)
+ManageDB --> CreateListingManager : return List <Listing>
+CreateListingManager -> Listing : filterActiveListings()
+"Listing" --> CreateListingManager : return List <Listing>
+CreateListingManager -> CreateListingManager : checkListingLimit(activeListings)
+
+alt
+CreateListingManager --> CreateListingScreen : <<create>>
+CreateListingManager -> CreateListingScreen : displayCreateListingScreen()
+else
+CreateListingManager -> ManageDB : getListingsForOwner(ownerID)
+ManageDB --> CreateListingManager : return List <Listing>
+CreateListingManager -> CreateListingScreen : showArchiveOptions(List<Listing>)
+    alt
+    Owner -> CreateListingScreen : archiveListing(listingID)
+    CreateListingScreen -> Listing : updateListingStatus(listingID)
+    Listing -> RentalInterest : getRentalInterests(listingID)
+    RentalInterest -> ManageDB : deleteAssociatedInterests(listingID)
+    ManageDB --> CreateListingManager : return
+    CreateListingManager --> Message : <<create>>
+    CreateListingManager -> Message : createMessage(listingID,"Archived")
+    Message -> MainScreen : displayMessage()
+    else
+    CreateListingManager --> MainScreen : return to MainScreen
+    Owner -> CreateListingScreen : cancelListingArchive()
+    CreateListingScreen -> CreateListingManager : cancelListingCreation()
+    CreateListingManager --> MainScreen : return to MainScreen
+    end
+end
+
+
+CreateListingManager --> CreateListingForm : <<create>>
+CreateListingForm -> CreateListingScreen : displayListingForm()
+Owner -> CreateListingScreen : Fill Form Fields & submitListingForm()
+
+alt
+CreateListingManager -> CreateListingForm : validateRequiredFields()
+CreateListingForm --> CreateListingManager : Valid Listing
+else
+CreateListingManager -> Message : createErrorMessage("Invalid Roommates Number")
+Message -> CreateListingScreen : displayMessage()
+CreateListingScreen --> CreateListingManager : return
+end
+
+alt
+CreateListingScreen -> CreateListingManager : validateRoommateCompatibility()
+CreateListingManager --> CreateListingScreen : return
+else
+CreateListingManager -> Message : createErrorMessage("Invalid Roommates Number")
+Message -> CreateListingScreen : displayMessage()
+CreateListingScreen --> CreateListingManager : return
+end
+
+CreateListingManager --> UploadPhotoForm : <<create>>
+UploadPhotoForm -> CreateListingScreen : displayUploadPhotoForm()
+Owner -> CreateListingScreen : Upload Images & submitUploadPhotosForm()
+
+alt
+CreateListingScreen -> CreateListingManager : validatePhotos(photos)
+CreateListingManager --> CreateListingScreen : Valid Photos
+else
+CreateListingManager --> CreateListingScreen : Invalid Photos
+CreateListingScreen -> Message : createErrorMessage("Invalid format/size")
+Message -> CreateListingScreen : displayMessage()
+CreateListingScreen -> UploadPhotoForm : removeInvalidPhotos()
+UploadPhotoForm --> CreateListingScreen : return
+end
+
+CreateListingScreen -> Photos : removeInvalidPhotos()
+Photos --> CreateListingManager : return
+CreateListingManager -> ManageDB : saveListing()
+ManageDB -> Message : createSuccessMessage("Listing Created")
+Message -> CreateListingScreen : displayMessage()
+CreateListingScreen -> LocationManager : triggerLocationEntry(listingID)
+@enduml
