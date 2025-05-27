@@ -32,7 +32,8 @@ public class MainScreen {
             String inputID = scanner.nextLine();
 
             if (ManageDB.isValidOwner(inputID)) {
-                this.owner = new Owner(inputID);
+                ManageDB.setLoggedInOwner(inputID);   // <-- Αποθηκεύει τον συνδεδεμένο χρήστη
+                this.owner = new Owner(inputID);      // <-- Δημιουργεί αντικείμενο Owner
                 loggedIn = true;
                 displayMessage("Σύνδεση επιτυχής με ID: " + inputID);
             } else {
@@ -40,6 +41,7 @@ public class MainScreen {
             }
         }
     }
+
 
     public void showMainMenu() {
         while (loggedIn) {
@@ -75,7 +77,7 @@ public class MainScreen {
     }
 
     public void onCreateListingClicked(String ownerID) {
-        listingManager.startCreateListingProcess(ownerID);
+        listingManager.initiateListingCreation(ownerID);
     }
 
     public void displayMessage(String message) {

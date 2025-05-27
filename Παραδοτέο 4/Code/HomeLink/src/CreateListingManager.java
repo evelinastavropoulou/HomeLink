@@ -9,7 +9,7 @@ public class CreateListingManager {
         this.screen.setManager(this);
     }
 
-    public void startCreateListingProcess(String ownerID) {
+    public void initiateListingCreation(String ownerID) {
         screen.displayTitle("Έλεγχος Αγγελιών");
 
         List<Listing> listings = db.getListingsForOwner(ownerID);
@@ -25,6 +25,9 @@ public class CreateListingManager {
 
     public void completeListingCreation(String ownerID) {
         Listing newListing = CreateListingForm.fillListingForm();
+
+        newListing.setOwnerID(ManageDB.getLoggedInOwner());  // <-- πολύ σημαντικό
+
 
         if (!validateRequiredFields(newListing)) {
             Message.createErrorMessage("Ο μέγιστος αριθμός συγκατοίκων πρέπει να είναι θετικός.");

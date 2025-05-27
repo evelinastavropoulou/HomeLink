@@ -1,3 +1,9 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import java.util.*;
 
 public class CreateListingScreen {
@@ -38,10 +44,24 @@ public class CreateListingScreen {
             manager.cancelListingCreation();  // επιστροφή στη MainScreen
         } else if (choice >= 1 && choice <= listings.size()) {
             Listing listingToArchive = listings.get(choice - 1);
-            listingToArchive.setArchived(true);  // αλλαγή κατάστασης
+
+            listingToArchive.setArchived(true);
+            listingToArchive.setActive(false);
+
+            try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
+                System.out.println(listingToArchive);
+
+                ManageDB.updateListingStatusWithConnection(conn, listingToArchive);
+
+                //RentalInterest.deleteAssociatedInterestsWithConnection(conn, listing.getId());
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
 
             // Διαγραφή δηλώσεων ενδιαφέροντος
-            RentalInterest.deleteAssociatedInterests(listingToArchive.getId());
+            //RentalInterest.deleteAssociatedInterests(listingToArchive.getId());
+
 
             // Εμφάνιση μηνύματος επιτυχίας
             Message.createMessage(listingToArchive.getId(), "Archived");
