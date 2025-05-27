@@ -2,68 +2,67 @@ import java.util.*;
 
 public class CreateListingManager {
     private ManageDB db = new ManageDB();
-    private MainScreen screen;
+    private CreateListingScreen screen;
 
-    public CreateListingManager(MainScreen screen) {
+    public CreateListingManager(CreateListingScreen screen) {
         this.screen = screen;
+        this.screen.setManager(this);
     }
 
     public void startCreateListingProcess(String ownerID) {
-        // Βήμα 2: Ανάκτηση αγγελιών από βάση
-        List<Listing> listings = db.getListingsForOwner(ownerID);
+        screen.displayTitle("Έλεγχος Αγγελιών");
 
-        // Βήμα 3: Φιλτράρισμα ενεργών
+        List<Listing> listings = db.getListingsForOwner(ownerID);
         List<Listing> active = Listing.filterActiveListings(listings);
 
-        // Βήμα 4: Έλεγχος αν υπερβαίνει το όριο
         if (!checkListingLimit(active)) {
-            screen.displayMessage("Έχετε φτάσει το όριο ενεργών αγγελιών. Παρακαλώ αρχειοθετήστε μία.");
+            screen.showArchiveOptions(listings); // Εναλλακτική ροή
             return;
         }
 
-        // Βήμα 6: Εμφάνιση φόρμας καταχώρησης
+        screen.displayCreateListingScreen(ownerID); // Κανονική ροή
+    }
+
+    public void completeListingCreation(String ownerID) {
         Listing newListing = CreateListingForm.fillListingForm();
 
-        // Βήμα 8: Έλεγχος πληρότητας πεδίων
         if (!validateRequiredFields(newListing)) {
-            screen.displayMessage("Σφάλμα: Ο μέγιστος αριθμός συγκατοίκων πρέπει να είναι θετικός.");
+            Message.createErrorMessage("Ο μέγιστος αριθμός συγκατοίκων πρέπει να είναι θετικός.");
+            screen.displayMessage("Ο μέγιστος αριθμός συγκατοίκων πρέπει να είναι θετικός.");
             return;
         }
 
-        // Βήμα 9: Συμβατότητα συγκατοίκων - δωματίων
         if (!validateRoommateCompatibility(newListing)) {
-            screen.displayMessage("Σφάλμα: Ο αριθμός συγκατοίκων υπερβαίνει τα διαθέσιμα δωμάτια.");
+            Message.createErrorMessage("Ο αριθμός συγκατοίκων υπερβαίνει τα δωμάτια.");
+            screen.displayMessage("Ο αριθμός συγκατοίκων υπερβαίνει τα δωμάτια.");
             return;
         }
 
-        // Βήμα 11: Μεταφόρτωση φωτογραφιών
+        screen.displayTitle("Μεταφόρτωση Φωτογραφιών");
         List<String> photos = UploadPhotoForm.uploadPhotos();
 
-        // Βήμα 13: Έλεγχος εγκυρότητας φωτογραφιών
         if (!validatePhotos(photos)) {
-            screen.displayMessage("Σφάλμα: Επιτρεπτοί τύποι φωτογραφιών είναι .jpg και .png.");
+            Message.createErrorMessage("Επιτρεπτοί τύποι είναι μόνο .jpg και .png.");
+            screen.displayMessage("Επιτρεπτοί τύποι είναι μόνο .jpg και .png.");
             return;
         }
 
-        // Βήμα 15: Αποθήκευση αγγελίας
         db.saveListing(newListing);
-
-        // Βήμα 16: Εμφάνιση επιτυχίας
+        Message.createSuccessMessage("Η αγγελία καταχωρήθηκε με επιτυχία.");
         screen.displayMessage("Η αγγελία καταχωρήθηκε με επιτυχία.");
-
-        // Βήμα 17: Ενεργοποίηση τοποθεσίας
         LocationManager.triggerLocationEntry(newListing.getId());
     }
 
-    public boolean validateRequiredFields(Listing listing) {
+
+    private boolean validateRequiredFields(Listing listing) {
         return listing != null && listing.getMaxRoommates() > 0;
     }
 
-    public boolean validateRoommateCompatibility(Listing listing) {
+    private boolean validateRoommateCompatibility(Listing listing) {
         return listing.getMaxRoommates() <= listing.getRooms();
     }
 
-    public boolean validatePhotos(List<String> photos) {
+    private boolean validatePhotos(List<String> photos) {
         for (String photo : photos) {
             if (!photo.endsWith(".jpg") && !photo.endsWith(".png")) {
                 return false;
@@ -72,8 +71,17 @@ public class CreateListingManager {
         return true;
     }
 
-    public boolean checkListingLimit(List<Listing> activeListings) {
-        int MAX_ACTIVE_LISTINGS = 3;
-        return activeListings.size() < MAX_ACTIVE_LISTINGS;
+    private boolean checkListingLimit(List<Listing> activeListings) {
+        return activeListings.size() < 3;
     }
+
+    public void cancelListingCreation() {
+        // λογική για επιστροφή στην MainScreen (αν υπάρχει)
+        // προς το παρόν: dummy
+    }
+
+    public void displayToMainScreen(String message) {
+        screen.displayMessage(message);
+    }
+
 }

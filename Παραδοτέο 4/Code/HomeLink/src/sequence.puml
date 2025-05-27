@@ -60,7 +60,7 @@ end
 
 alt
 CreateListingScreen -> CreateListingManager : validateRoommateCompatibility()
-CreateListingManager --> CreateListingScreen : return
+CreateListingManager --> CreateListingScreen : returnα
 else
 CreateListingManager -> Message : createErrorMessage("Invalid Roommates Number")
 Message -> CreateListingScreen : displayMessage()

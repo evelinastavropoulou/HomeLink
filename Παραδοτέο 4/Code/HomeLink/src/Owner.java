@@ -13,7 +13,7 @@ public class Owner {
         return ownerID;
     }
 
-    public void archiveListing(String listingID) {
+public void archiveListing(String listingID) {
         System.out.println("Owner archived listing " + listingID);
     }
 

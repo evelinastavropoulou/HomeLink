@@ -5,7 +5,7 @@ public class CreateListingForm {
     public static Listing fillListingForm() {
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("Συμπλήρωσε τα στοιχεία για την αγγελία:");
+        System.out.println("\n--- Φόρμα Καταχώρησης Αγγελίας ---");
 
         System.out.print("Τύπος Κατοικίας: ");
         String type = sc.nextLine();
