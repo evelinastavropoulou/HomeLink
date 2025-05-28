@@ -20,4 +20,10 @@ public class RentalInterestManager {
     public Listing fetchFullListingDetails(String listingID) {
         return ManageDB.getListingDetails(listingID);
     }
+
+    public List<String> getOwnerAvailability(String listingID) {
+        String ownerID = ManageDB.getOwnerIDByListing(listingID); // π.χ., SELECT owner_id FROM listings WHERE id = ?
+        return UserAvailability.getOwnerAvailability(ownerID);
+    }
+
 }

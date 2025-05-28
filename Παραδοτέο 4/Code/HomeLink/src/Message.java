@@ -3,12 +3,14 @@ public class Message {
         System.out.println("[Message] Listing " + listingID + " status: " + status);
     }
 
-    public static void createErrorMessage(String message) {
+    public static String createErrorMessage(String message) {
         System.out.println("[ERROR] " + message);
+        return message;
     }
 
-    public static void createSuccessMessage(String message) {
+    public static String createSuccessMessage(String message) {
         System.out.println("[SUCCESS] " + message);
+        return message;
     }
 
         public static void createPromptMessage(String msg) {

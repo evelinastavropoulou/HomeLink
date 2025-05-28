@@ -56,6 +56,13 @@ public class Listing {
         return ManageDB.queryListings(criteria);
     }
 
+    public String[] getTypeAndCapacity() {
+        String typeDescription = canShare ? "Shared" : "Private";
+        String capacityDescription = canShare ? String.valueOf(maxRoommates) : "1";
+
+        return new String[] { typeDescription, capacityDescription };
+    }
+
     public double getLatitude() { return latitude; }
     public double getLongitude() { return longitude; }
     public void setLatitude(double latitude) { this.latitude = latitude; }

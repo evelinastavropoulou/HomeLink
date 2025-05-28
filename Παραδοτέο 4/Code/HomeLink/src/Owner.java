@@ -22,6 +22,11 @@ public class Owner {
     }
 
 
+    public void onInterestDeclarationsClicked(MainScreen screen, String ownerID) {
+        RentalRequestManager.startRentalProcess(screen, ownerID);
+    }
+
+
     public String getOwnerID() {
         return ownerID;
     }

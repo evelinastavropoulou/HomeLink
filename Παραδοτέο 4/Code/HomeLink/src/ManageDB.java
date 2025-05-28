@@ -1,5 +1,6 @@
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ManageDB {
 
@@ -15,6 +16,7 @@ public class ManageDB {
     public static String getLoggedInOwner() {
         return currentLoggedInOwner;
     }
+
 
     public static UserPreferences getUserPreferences(String userID) {
         UserPreferences prefs = null;
@@ -100,6 +102,63 @@ public class ManageDB {
     }
 
 
+    public static List<Listing> getListingsByOwner(String ownerID) {
+        List<Listing> listings = new ArrayList<>();
+        String sql = "SELECT * FROM listings WHERE active = 1 AND owner_id = ?";
+
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db");
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, ownerID);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Listing l = new Listing(
+                        rs.getString("id"),
+                        rs.getString("owner_id"),
+                        rs.getString("type"),
+                        rs.getInt("size"),
+                        rs.getDouble("price"),
+                        rs.getInt("floor"),
+                        rs.getInt("rooms"),
+                        rs.getBoolean("can_share"),
+                        rs.getInt("max_roommates"),
+                        rs.getBoolean("active")
+                );
+                l.setAddress(rs.getString("address"));
+                listings.add(l);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return listings;
+    }
+
+
+    public static List<String> queryInterestsByListingId(String listingID) {
+        List<String> interests = new ArrayList<>();
+        String sql = "SELECT user_id, listing_id FROM interests WHERE listing_id = ?";
+
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db");
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, listingID);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String userId = rs.getString("user_id");
+                String lId = rs.getString("listing_id");
+                interests.add(userId + ";" + lId); // ή userId + " για " + lId αν θες για εμφάνιση
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return interests;
+    }
 
 
     public List<Listing> getListingsForOwner(String ownerID) {
@@ -134,9 +193,14 @@ public class ManageDB {
 
     public static List<Listing> getAllListings() {
         List<Listing> listings = new ArrayList<>();
+        String loggedInUser = getLoggedInOwner(); // <-- το παίρνουμε από παντού
+
         try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM listings WHERE active = 1");
+            PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT * FROM listings WHERE active = 1 AND owner_id != ?"
+            );
+            stmt.setString(1, loggedInUser);
+            ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 Listing l = new Listing(
@@ -161,30 +225,49 @@ public class ManageDB {
     }
 
 
+
     public static List<Listing> queryListings(SearchHousingForm criteria) {
         List<Listing> results = new ArrayList<>();
-        String sql = "SELECT * FROM listings WHERE active = 1";
+        StringBuilder sql = new StringBuilder("SELECT * FROM listings WHERE active = 1");
+
+        String loggedInUser = getLoggedInOwner(); // <-- παίρνουμε τον συνδεδεμένο χρήστη
+
+        // Αποκλείουμε αγγελίες του ίδιου χρήστη
+        if (loggedInUser != null && !loggedInUser.isEmpty()) {
+            sql.append(" AND owner_id != ?");
+        }
 
         if (criteria.getLocation() != null && !criteria.getLocation().isEmpty()) {
-            sql += " AND LOWER(address) LIKE ?";
+            sql.append(" AND LOWER(address) LIKE ?");
         }
         if (criteria.getType() != null && !criteria.getType().isEmpty()) {
-            sql += " AND LOWER(type) = ?";
+            sql.append(" AND LOWER(type) = ?");
         }
         if (criteria.getCanShare() != null) {
-            sql += " AND can_share = ?";
+            sql.append(" AND can_share = ?");
         }
 
         try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db");
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
 
             int index = 1;
+
+            // 1. owner_id != ?
+            if (loggedInUser != null && !loggedInUser.isEmpty()) {
+                stmt.setString(index++, loggedInUser);
+            }
+
+            // 2. location
             if (criteria.getLocation() != null && !criteria.getLocation().isEmpty()) {
                 stmt.setString(index++, "%" + criteria.getLocation().toLowerCase() + "%");
             }
+
+            // 3. type
             if (criteria.getType() != null && !criteria.getType().isEmpty()) {
                 stmt.setString(index++, criteria.getType().toLowerCase());
             }
+
+            // 4. can_share
             if (criteria.getCanShare() != null) {
                 stmt.setBoolean(index++, criteria.getCanShare());
             }
@@ -310,21 +393,84 @@ public class ManageDB {
         }
     }
 
-    public static String getOwnerEmailByListing(String listingId) {
-        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
-            PreparedStatement stmt = conn.prepareStatement(
-                    "SELECT owner_email FROM listings WHERE id = ?");
-            stmt.setString(1, listingId);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getString("owner_email");
+
+    public static void saveUserAvailability(String userID, String listingID, List<String> timeSlots) {
+        String sql = "INSERT INTO availability (user_id, listing_id, timeslot) VALUES (?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db");
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            for (String slot : timeSlots) {
+                pstmt.setString(1, userID);
+                pstmt.setString(2, listingID);
+                pstmt.setString(3, slot);
+                pstmt.addBatch();
             }
+
+            pstmt.executeBatch();
+            System.out.println("[DB] ✅ Αποθηκεύτηκε διαθεσιμότητα για " + userID);
+
+        } catch (SQLException e) {
+            System.err.println("[DB] ❌ Σφάλμα κατά την αποθήκευση διαθεσιμότητας: " + e.getMessage());
+        }
+    }
+
+
+    public static List<String> queryOwnerAvailability(String ownerID) {
+        List<String> timeSlots = new ArrayList<>();
+        String sql = "SELECT timeslot FROM availability WHERE user_id = ?";
+
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db");
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, ownerID);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                timeSlots.add(rs.getString("timeslot"));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("[DB] ❌ Σφάλμα ανάκτησης availability: " + e.getMessage());
+        }
+
+        return timeSlots;
+    }
+
+
+    public static String getOwnerIDByListing(String listingID) {
+        // Προσομοίωση
+        return "owner123"; // Replace with real query: SELECT ownerID FROM listings WHERE id = ?
+    }
+
+
+    public static Map<String, Integer> queryTrustScores(List<String> userIds) {
+        Map<String, Integer> trustScores = new HashMap<>();
+
+        String sql = "SELECT user_id, trust_score FROM users WHERE user_id IN ("
+                + userIds.stream().map(id -> "?").collect(Collectors.joining(", ")) + ")";
+
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db");
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            int index = 1;
+            for (String id : userIds) {
+                stmt.setString(index++, id);
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String userId = rs.getString("user_id");
+                int score = rs.getInt("trust_score");
+                trustScores.put(userId, score);
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "no-reply@example.com"; // Fallback
-    }
 
+        return trustScores;
+    }
 
 
 

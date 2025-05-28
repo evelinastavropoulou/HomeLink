@@ -62,7 +62,7 @@ public class SearchHousingScreen {
     }
 
     public void displayMap(List<Marker> markers) {
-        System.out.println("\n\n🗺️ Χάρτης Αγγελιών:");
+        System.out.println("\n🗺️ Χάρτης Αγγελιών:");
         for (Marker m : markers) {
             System.out.println(m);
         }
@@ -71,7 +71,7 @@ public class SearchHousingScreen {
     public void displaySearchResults(List<Listing> listings, List<Marker> markers) {
         displayMap(markers);
 
-        System.out.println("\n\n🔍 Αποτελέσματα Αναζήτησης:");
+        System.out.println("\n🔍 Αποτελέσματα Αναζήτησης:");
         for (Listing l : listings) {
             System.out.println("ID: " + l.getId() + " → " + l + " [Score: " + l.getScore() + "]");
         }
@@ -139,8 +139,12 @@ public class SearchHousingScreen {
 
             manager.createInterest(userID, listingID, message);
             displayMessage("✅ Το ενδιαφέρον σας καταχωρήθηκε επιτυχώς.");
+
+            // 🔁 Κλήση της οθόνης εισαγωγής διαθεσιμότητας
+            UserAvailabilityScreen.showAvailabilitySelectionScreen(userID, listingID);
         }
     }
+
 
 
     public void displayExistingInterest(String userID, Listing listing, Map<String, String> interestDetails) {
