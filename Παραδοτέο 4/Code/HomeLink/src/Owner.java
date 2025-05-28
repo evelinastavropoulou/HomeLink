@@ -5,9 +5,22 @@ public class Owner {
         this.ownerID = ownerID;
     }
 
+    public String getId() {
+        return this.ownerID;
+    }
+
     public void onCreateListingClicked(MainScreen screen) {
         screen.onCreateListingClicked(this.ownerID);
     }
+
+    public void onSearchHousingClicked(MainScreen screen, String userID) {
+        SearchHousingManager manager = new SearchHousingManager();
+        SearchHousingScreen searchScreen = new SearchHousingScreen();
+        searchScreen.setManager(manager);
+        manager.setScreen(searchScreen);
+        manager.initiateSearchHousing(userID);
+    }
+
 
     public String getOwnerID() {
         return ownerID;

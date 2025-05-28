@@ -10,4 +10,10 @@ public class Message {
     public static void createSuccessMessage(String message) {
         System.out.println("[SUCCESS] " + message);
     }
+
+        public static void createPromptMessage(String msg) {
+            System.out.println("[ΕΡΩΤΗΣΗ] " + msg);
+        }
+
+
 }

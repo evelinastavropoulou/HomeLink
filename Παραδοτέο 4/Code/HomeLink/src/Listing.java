@@ -12,7 +12,18 @@ public class Listing {
     private boolean canShare;
     private int maxRoommates;
     private boolean isActive;
+    private String address;
+    private double latitude;
+    private double longitude;
+    private double score;
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
     public Listing(String id, String type, int size, double price, int floor,
                    int rooms, boolean canShare, int maxRoommates) {
         this.id = id;
@@ -40,6 +51,18 @@ public class Listing {
         this.maxRoommates = maxRoommates;
         this.isActive = isActive;
     }
+
+    public static List<Listing> fetchListings(SearchHousingForm criteria) {
+        return ManageDB.queryListings(criteria);
+    }
+
+    public double getLatitude() { return latitude; }
+    public double getLongitude() { return longitude; }
+    public void setLatitude(double latitude) { this.latitude = latitude; }
+    public void setLongitude(double longitude) { this.longitude = longitude; }
+
+    public double getScore() { return score; }
+    public void setScore(double score) { this.score = score; }
 
     // Getters
     public String getId() { return id; }
@@ -70,6 +93,29 @@ public class Listing {
         }
         return active;
     }
+
+    public void computeSuitabilityScore(SearchHousingForm criteria) {
+        double score = 100.0;
+
+        if (criteria.getLocation() != null && !criteria.getLocation().isEmpty()) {
+            if (this.address == null || !this.address.equalsIgnoreCase(criteria.getLocation())) {
+                score -= 30; // τιμωρία για λάθος περιοχή
+            }
+        }
+
+        if (criteria.getType() != null && !criteria.getType().isEmpty()) {
+            if (!this.type.equalsIgnoreCase(criteria.getType())) {
+                score -= 20; // τιμωρία για λάθος τύπο
+            }
+        }
+
+        if (criteria.isCanShare() && !this.canShare) {
+            score -= 30; // τιμωρία για συγκατοίκηση που δεν υποστηρίζεται
+        }
+
+        this.score = Math.max(score, 0);
+    }
+
 
     @Override
     public String toString() {

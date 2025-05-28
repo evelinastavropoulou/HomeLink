@@ -1,0 +1,70 @@
+@startuml
+
+actor "Owner" as Owner
+participant "MainScreen" as MainScreen
+participant "SearchHousingScreen" as SearchHousingScreen
+participant "SearchHousingManager" as SearchHousingManager
+participant "ManageDB" as ManageDB
+participant "SearchHousingForm" as SearchHousingForm
+participant "Message" as Message
+participant "MapService" as MapService
+participant "UserPreferences" as UserPreferences
+participant "Listing" as Listing
+
+Owner -> MainScreen : onSearchHousingClicked()
+MainScreen -> SearchHousingManager : initiateSearchHousing()
+SearchHousingManager --> SearchHousingForm : <<create>>
+SearchHousingManager -> SearchHousingForm : createSearchHousingForm(formData)
+SearchHousingForm -> SearchHousingScreen : displaySearchForm()
+Owner -> SearchHousingScreen : fillSearchCriteria()
+SearchHousingScreen -> SearchHousingForm :getSearchCriteria()
+SearchHousingForm -> SearchHousingForm : validateSearchForm()
+alt
+SearchHousingForm --> SearchHousingManager : success validation
+else
+SearchHousingForm --> SearchHousingManager : failed validation
+SearchHousingManager -> Message : createErrorMessage("Empty Required Fields")
+Message -> SearchHousingScreen : displayMessage()
+end
+
+alt
+SearchHousingScreen -> SearchHousingManager : loadUsersPreferences(userID)
+SearchHousingManager -> UserPreferences : getUserPreferences(userID)
+UserPreferences --> SearchHousingManager : return userPreferences
+SearchHousingManager -> Message : createPromptMessage("Apply Preferences?")
+Message -> SearchHousingScreen : displayPrompt()
+
+    alt
+    Owner -> SearchHousingScreen : acceptFilters()
+    SearchHousingScreen -> SearchHousingManager : applyPreferences(criteria,preferences)
+    else
+    Owner -> SearchHousingScreen : declineFilters()
+    SearchHousingScreen -> SearchHousingManager : ignorePreferences()
+    end
+
+else
+UserPreferences --> SearchHousingManager : return  no userPreferences
+SearchHousingManager -> SearchHousingManager : continueWithoutPreferences()
+end
+
+alt
+SearchHousingManager -> SearchHousingManager : executeSearch(preferences)
+SearchHousingManager -> Listing : fetchListings(preferences)
+Listing -> ManageDB : queryListings()
+ManageDB --> SearchHousingManager : return Listings
+else
+ManageDB --> SearchHousingManager : return no Listings
+SearchHousingManager -> Message : createPromptMessage("No Results Found. Broaden Criteria?")
+Message -> SearchHousingScreen : displayPrompt()
+Owner -> SearchHousingScreen : requestBroaderSearch()
+SearchHousingScreen -> SearchHousingManager : broadenSearch()
+SearchHousingManager ->  SearchHousingScreen : displaySearchResults(listings)
+
+SearchHousingManager -> MapService : fetchGeolocation(listings)
+MapService -> MapService : generateMarkers()
+MapService -> SearchHousingScreen : displayMap(markers)
+SearchHousingScreen -> Listing : computeSuitabilityScore()
+Listing -->  SearchHousingScreen : return listingsScore
+SearchHousingManager ->SearchHousingManager : sortListingsByScore()
+SearchHousingManager -> SearchHousingScreen : displaySearchResults(listings,markers,score)
+@enduml

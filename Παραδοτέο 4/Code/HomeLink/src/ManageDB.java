@@ -2,7 +2,7 @@ import java.sql.*;
 import java.util.*;
 
 public class ManageDB {
-    
+
     private static final String DB_URL = "jdbc:sqlite:homelink.db";
 
     // Ενεργός χρήστης
@@ -15,6 +15,30 @@ public class ManageDB {
     public static String getLoggedInOwner() {
         return currentLoggedInOwner;
     }
+
+    public static UserPreferences getUserPreferences(String userID) {
+        UserPreferences prefs = null;
+
+        try (Connection conn = DriverManager.getConnection(DB_URL)) {
+            PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT location, type, can_share FROM user_preferences WHERE owner_id = ?"
+            );
+            stmt.setString(1, userID);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                prefs = new UserPreferences();
+                prefs.setLocation(rs.getString("location"));
+                prefs.setType(rs.getString("type"));
+                prefs.setCanShare(rs.getBoolean("can_share"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return prefs;
+    }
+
 
     public static boolean isValidOwner(String ownerID) {
         try (Connection conn = DriverManager.getConnection(DB_URL)) {
@@ -107,4 +131,89 @@ public class ManageDB {
         }
         return listings;
     }
+
+    public static List<Listing> getAllListings() {
+        List<Listing> listings = new ArrayList<>();
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM listings WHERE active = 1");
+
+            while (rs.next()) {
+                Listing l = new Listing(
+                        rs.getString("id"),
+                        rs.getString("owner_id"),
+                        rs.getString("type"),
+                        rs.getInt("size"),
+                        rs.getDouble("price"),
+                        rs.getInt("floor"),
+                        rs.getInt("rooms"),
+                        rs.getBoolean("can_share"),
+                        rs.getInt("max_roommates"),
+                        rs.getBoolean("active")
+                );
+                l.setAddress(rs.getString("address"));
+                listings.add(l);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return listings;
+    }
+
+
+    public static List<Listing> queryListings(SearchHousingForm criteria) {
+        List<Listing> results = new ArrayList<>();
+        String sql = "SELECT * FROM listings WHERE active = 1";
+
+        if (criteria.getLocation() != null && !criteria.getLocation().isEmpty()) {
+            sql += " AND LOWER(address) LIKE ?";
+        }
+        if (criteria.getType() != null && !criteria.getType().isEmpty()) {
+            sql += " AND LOWER(type) = ?";
+        }
+        if (criteria.getCanShare() != null) {
+            sql += " AND can_share = ?";
+        }
+
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db");
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            int index = 1;
+            if (criteria.getLocation() != null && !criteria.getLocation().isEmpty()) {
+                stmt.setString(index++, "%" + criteria.getLocation().toLowerCase() + "%");
+            }
+            if (criteria.getType() != null && !criteria.getType().isEmpty()) {
+                stmt.setString(index++, criteria.getType().toLowerCase());
+            }
+            if (criteria.getCanShare() != null) {
+                stmt.setBoolean(index++, criteria.getCanShare());
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Listing l = new Listing(
+                        rs.getString("id"),
+                        rs.getString("owner_id"),
+                        rs.getString("type"),
+                        rs.getInt("size"),
+                        rs.getDouble("price"),
+                        rs.getInt("floor"),
+                        rs.getInt("rooms"),
+                        rs.getBoolean("can_share"),
+                        rs.getInt("max_roommates"),
+                        rs.getBoolean("active")
+                );
+                l.setArchived(rs.getBoolean("archived"));
+                l.setAddress(rs.getString("address"));
+                results.add(l);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return results;
+    }
+
+
 }

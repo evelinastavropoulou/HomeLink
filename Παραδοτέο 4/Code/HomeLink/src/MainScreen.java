@@ -47,9 +47,11 @@ public class MainScreen {
         while (loggedIn) {
             displayTitle("Αρχική Οθόνη");
             System.out.println("1. Δημιουργία Αγγελίας");
-            System.out.println("2. Αποσύνδεση (Logout)");
+            System.out.println("2. Αναζήτηση Κατοικίας");  // νέα επιλογή
+            System.out.println("3. Αποσύνδεση (Logout)");
             System.out.println("0. Έξοδος");
             System.out.print("Επιλογή: ");
+
 
             int choice = scanner.nextInt();
             scanner.nextLine(); // consume newline
@@ -59,6 +61,9 @@ public class MainScreen {
                     owner.onCreateListingClicked(this);
                     break;
                 case 2:
+                    owner.onSearchHousingClicked(this, owner.getId());
+                    break;
+                case 3:
                     logout();
                     break;
                 case 0:
@@ -69,6 +74,7 @@ public class MainScreen {
             }
         }
     }
+
 
     public void logout() {
         displayMessage("Αποσυνδεθήκατε.");
