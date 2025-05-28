@@ -33,6 +33,16 @@ public class DBInit {
                     "rent_price REAL," +
                     "size_sqm REAL)");
 
+            // Δημιουργία πίνακα ενδιαφέροντος (interests)
+            stmt.execute("CREATE TABLE IF NOT EXISTS interests (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "listing_id TEXT NOT NULL," +
+                    "user_id TEXT NOT NULL," +
+                    "timestamp DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                    "message TEXT," +
+                    "FOREIGN KEY(listing_id) REFERENCES listings(id)," +
+                    "FOREIGN KEY(user_id) REFERENCES owners(id))");
+
 
             // Εισαγωγή χρηστών
             stmt.execute("INSERT OR IGNORE INTO owners VALUES ('anna')");
@@ -113,6 +123,14 @@ public class DBInit {
             insertPrefs.setDouble(5, 400.0); // Τιμή ενοικίου
             insertPrefs.setDouble(6, 40.0);  // Τετραγωνικά
             insertPrefs.executeUpdate();
+
+
+            PreparedStatement insertInterest = conn.prepareStatement(
+                    "INSERT INTO interests (listing_id, user_id, message) VALUES (?, ?, ?)");
+            insertInterest.setString(1, "listing001");
+            insertInterest.setString(2, "owner2");
+            insertInterest.setString(3, "Ενδιαφέρομαι για το σπίτι σας. Μπορούμε να μιλήσουμε;");
+            insertInterest.executeUpdate();
 
 
             System.out.println("✅ Database initialized with listings, owners and preferences.");

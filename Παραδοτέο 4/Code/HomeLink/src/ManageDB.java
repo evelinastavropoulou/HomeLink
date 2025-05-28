@@ -216,4 +216,116 @@ public class ManageDB {
     }
 
 
+    public static Listing getListingDetails(String listingID) {
+        Listing listing = null;
+
+        try (Connection conn = DriverManager.getConnection(DB_URL)) {
+            PreparedStatement stmt = conn.prepareStatement("SELECT * FROM listings WHERE id = ?");
+            stmt.setString(1, listingID);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                listing = new Listing(
+                        rs.getString("id"),
+                        rs.getString("owner_id"),
+                        rs.getString("type"),
+                        rs.getInt("size"),
+                        rs.getDouble("price"),
+                        rs.getInt("floor"),
+                        rs.getInt("rooms"),
+                        rs.getBoolean("can_share"),
+                        rs.getInt("max_roommates"),
+                        rs.getBoolean("active")
+                );
+                listing.setArchived(rs.getBoolean("archived"));
+                listing.setAddress(rs.getString("address"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return listing;
+    }
+
+
+    public static boolean interestExists(String userId, String listingId) {
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
+            PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT 1 FROM interests WHERE user_id = ? AND listing_id = ?");
+            stmt.setString(1, userId);
+            stmt.setString(2, listingId);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static Map<String, String> getInterest(String userId, String listingId) {
+        Map<String, String> details = new HashMap<>();
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
+            PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT message, timestamp FROM interests WHERE user_id = ? AND listing_id = ?");
+            stmt.setString(1, userId);
+            stmt.setString(2, listingId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                details.put("message", rs.getString("message"));
+                details.put("timestamp", rs.getString("timestamp"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return details;
+    }
+
+
+    public static void insertInterest(String userId, String listingId, String message) {
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
+            PreparedStatement stmt = conn.prepareStatement(
+                    "INSERT INTO interests (user_id, listing_id, message, timestamp) VALUES (?, ?, ?, CURRENT_TIMESTAMP)");
+            stmt.setString(1, userId);
+            stmt.setString(2, listingId);
+            stmt.setString(3, message);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static boolean deleteInterest(String userId, String listingId) {
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
+            PreparedStatement stmt = conn.prepareStatement(
+                    "DELETE FROM interests WHERE user_id = ? AND listing_id = ?");
+            stmt.setString(1, userId);
+            stmt.setString(2, listingId);
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static String getOwnerEmailByListing(String listingId) {
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
+            PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT owner_email FROM listings WHERE id = ?");
+            stmt.setString(1, listingId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("owner_email");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "no-reply@example.com"; // Fallback
+    }
+
+
+
+
 }
