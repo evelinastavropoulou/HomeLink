@@ -32,4 +32,18 @@ public class Notification {
     public String getListingId() {
         return listingId;
     }
+
+    public static void notifyAllParticipants(RentalTerms rental) {
+        String listingId = rental.getListingId();
+
+        // Δημιουργούμε νέα λίστα με όλους τους συμμετέχοντες
+        List<String> participants = new ArrayList<>(rental.getTenantIds()); // ✅ μετατρέπεται σε mutable
+
+        for (String userId : participants) {
+            String msg = "📢 Η σύμβαση για την αγγελία " + listingId + " ενεργοποιήθηκε.";
+            ManageDB.saveAsUnread(listingId, msg, userId); // ✅ αποθήκευση στη βάση
+        }
+    }
+
 }
+

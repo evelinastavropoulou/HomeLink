@@ -689,6 +689,34 @@ public class ManageDB {
     }
 
 
+    public static void updateListingAvailability(String listingId, boolean available) {
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
+            String sql = "UPDATE listings SET active = ? WHERE id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setBoolean(1, available);
+            stmt.setString(2, listingId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void saveAsUnread(String listingId, String recipientId, String message) {
+        String sql = "INSERT INTO notifications (listing_id, recipient_id, message) VALUES (?, ?, ?)";
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db");
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, listingId);
+            stmt.setString(2, recipientId);
+            stmt.setString(3, message);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("[❌] Σφάλμα κατά την αποθήκευση ειδοποίησης.");
+            e.printStackTrace();
+        }
+    }
+
+
 
 
 

@@ -47,6 +47,11 @@ public class RentalTerms {
         return ManageDB.updateRentalStatus(rental.getListingId(), rental.getTenantIds().get(0), "ready_for_finalization");
     }
 
+    public static void activateRental(RentalTerms rental) {
+        ManageDB.updateRentalStatus(rental.getListingId(), rental.getTenantIds().get(0), "active");
+    }
+
+
     public void getAllRentalDetails() {
         System.out.println("\n📄 Λεπτομέρειες Ενοικίασης:");
         System.out.println("Αγγελία: " + listingId);

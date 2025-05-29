@@ -137,4 +137,9 @@ public class Listing {
                 ", Μέγιστοι Συγκάτοικοι: " + maxRoommates +
                 ", Ενεργή: " + (isActive ? "Ναι" : "Όχι");
     }
+
+    public static void markAsUnavailable(String listingId) {
+        ManageDB.updateListingAvailability(listingId, false);
+    }
+
 }

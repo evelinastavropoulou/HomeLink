@@ -54,14 +54,53 @@ public class FinalizeRentalScreen {
 
         boolean saved = ManageDB.saveRentalContract(rental);
 
-        if (saved) {
-            String finalMsg = Message.createSuccessMessage("📎 Contract Ready");
-            displayMessage(finalMsg);
-        } else {
+        if (!saved) {
             String errorMsg = Message.createErrorMessage("❌ Αποτυχία αποθήκευσης συμβολαίου στη βάση.");
             displayMessage(errorMsg);
+            return;
+        }
+
+        displayMessage(Message.createSuccessMessage("📎 Contract Ready"));
+
+        // 🔄 Επιλογή χρήστη για συνέχιση ή ακύρωση
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("\nΘέλετε να υποβάλετε τη σύμβαση ή να ακυρώσετε; (submit/cancel): ");
+        String choice = scanner.nextLine().trim().toLowerCase();
+
+        if (choice.equals("submit")) {
+            submitContract(rental); // ✅ Υποβολή και ενεργοποίηση
+        } else if (choice.equals("cancel")) {
+            cancelContractFinalization(rental);
+        } else {
+            displayMessage(Message.createErrorMessage("❌ Μη έγκυρη επιλογή."));
         }
     }
+
+    private void cancelContractFinalization(RentalTerms rental) {
+        Message.createPromptMessage("❓ Confirm Cancellation?");
+        FinalizeRentalManager.terminateContractCreation();
+        displayMessage(Message.createSuccessMessage("⛔ Η διαδικασία δημιουργίας συμβολαίου ακυρώθηκε."));
+        //returnToMainScreen();
+    }
+
+
+    private void submitContract(RentalTerms rental) {
+        // 1. Ενημέρωση καταστάσεων και βάσεων
+        Listing.markAsUnavailable(rental.getListingId());
+        RentalInterest.deleteListingInterests(rental.getListingId());
+        RentalTerms.activateRental(rental); // ενημερώνει το status σε "active"
+        ManageDB.updateRentalStatus(rental.getListingId(), rental.getTenantIds().get(0), "active");
+
+        // 2. Εμφάνιση επιτυχίας
+        displayMessage(Message.createSuccessMessage("✅ Η σύμβαση υποβλήθηκε και ενεργοποιήθηκε."));
+
+        // 3. Ειδοποίηση συμμετεχόντων
+        Notification.notifyAllParticipants(rental);
+
+        // 4. Επιστροφή στην αρχική οθόνη
+        //returnToMainScreen();
+    }
+
 
 
     public void displayContractPreview(RentalTerms rental) {

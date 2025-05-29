@@ -26,6 +26,12 @@ public class RentalContract {
         );
     }
 
+    public void generateContractPDF() {
+        System.out.println("\n📄 Το συμβόλαιο δημιουργήθηκε επιτυχώς σε PDF μορφή!");
+    }
+
+   // Βοηθητικές συναρτήσεις για debugging
+
     private String generateText() {
         return "Μισθωτήριο Συμβόλαιο για την Αγγελία: " + listingId + "\n" +
                 "Ενοικιαστές: " + String.join(", ", tenants) + "\n" +
@@ -40,11 +46,4 @@ public class RentalContract {
         System.out.println(contractText);
         System.out.println("============================");
     }
-
-    public void generateContractPDF() {
-        System.out.println("\n📄 Το συμβόλαιο δημιουργήθηκε επιτυχώς σε PDF μορφή!");
-    }
-
-
-    // Optionally: saveToDB() method here if needed
 }

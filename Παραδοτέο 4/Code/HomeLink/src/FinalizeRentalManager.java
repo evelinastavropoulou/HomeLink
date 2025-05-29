@@ -21,5 +21,9 @@ public class FinalizeRentalManager {
         screen.displayContractPreview(rental);  // Απλή προβολή στοιχείων rental χωρίς καμία φόρμα
     }
 
+    public static void terminateContractCreation() {
+        System.out.println("[🚫] Η διαδικασία δημιουργίας της σύμβασης ακυρώθηκε από τον χρήστη.");
+        // Εδώ μπορείς να προσθέσεις λογική καθαρισμού ή rollback αν χρειαστεί
+    }
 
 }

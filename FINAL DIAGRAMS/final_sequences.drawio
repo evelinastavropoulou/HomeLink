@@ -8629,7 +8629,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="XSuZvoxPs3WUwWbAmhKf" name="use-case-12">
-    <mxGraphModel dx="2584" dy="899" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2703" dy="959" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -9200,13 +9200,13 @@
             <mxPoint x="-16" y="-7" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="oJcPZmJcHsrfloB8hvZ6-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;" parent="1" target="fY-TbPbctk_h3LEQbBmn-6" edge="1">
+        <mxCell id="oJcPZmJcHsrfloB8hvZ6-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;" parent="1" target="fY-TbPbctk_h3LEQbBmn-6" edge="1" source="khGXfPKCnQGM4c_FgNIH-9">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="30.00142857142844" y="1260.0000000000002" as="sourcePoint" />
             <mxPoint x="1399.5" y="1260.0000000000005" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="880" y="1260" />
-              <mxPoint x="880" y="1260" />
+              <mxPoint x="827" y="1257" />
+              <mxPoint x="827" y="1257" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -9275,18 +9275,7 @@
         </mxCell>
         <mxCell id="oJcPZmJcHsrfloB8hvZ6-29" value="createPromptMessage(&quot;Confirm Cancellation ?&quot;)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" parent="oJcPZmJcHsrfloB8hvZ6-28" vertex="1" connectable="0">
           <mxGeometry x="-0.1387" y="3" relative="1" as="geometry">
-            <mxPoint x="15" y="-7" as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="oJcPZmJcHsrfloB8hvZ6-30" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" edge="1">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="-369.9960606060605" y="1470" as="sourcePoint" />
-            <mxPoint x="694.5" y="1470" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="oJcPZmJcHsrfloB8hvZ6-31" value="confitmContractCancellation()" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" parent="oJcPZmJcHsrfloB8hvZ6-30" vertex="1" connectable="0">
-          <mxGeometry x="0.3461" y="1" relative="1" as="geometry">
-            <mxPoint x="-636" y="-9" as="offset" />
+            <mxPoint x="47" y="-7" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="oJcPZmJcHsrfloB8hvZ6-32" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" edge="1">
