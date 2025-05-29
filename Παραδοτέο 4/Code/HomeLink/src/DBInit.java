@@ -32,11 +32,11 @@ public class DBInit {
                     "tenant_id TEXT NOT NULL," +
                     "price REAL NOT NULL," +
                     "duration_months INTEGER NOT NULL," +
-                    "accepted BOOLEAN DEFAULT 0," +  // <-- ✅ ΝΕΟ ΠΕΔΙΟ
+                    "accepted BOOLEAN DEFAULT 0," +
+                    "status TEXT DEFAULT 'pending'," +  // <-- ✅ ΝΕΟ ΠΕΔΙΟ
                     "timestamp DATETIME DEFAULT CURRENT_TIMESTAMP," +
                     "FOREIGN KEY(listing_id) REFERENCES listings(id)," +
                     "FOREIGN KEY(tenant_id) REFERENCES users(user_id))");
-
 
 
             // Δημιουργία πίνακα αγγελιών με πεδίο 'address' και 'active'

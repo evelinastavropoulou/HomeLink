@@ -17,6 +17,10 @@ public class Notification {
         return new Notification(msg, rental.getListingId(), tenantIds);
     }
 
+    public static Notification createNotification(String listingId, String ownerId, String messageText) {
+        return new Notification(listingId, messageText, Collections.singletonList(ownerId));
+    }
+
     public String getMessage() {
         return message;
     }

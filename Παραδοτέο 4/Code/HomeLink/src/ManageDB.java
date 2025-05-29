@@ -583,4 +583,38 @@ public class ManageDB {
     }
 
 
+    public static boolean updateRentalStatus(String listingId, String tenantId, String newStatus) {
+        String dbUrl = "jdbc:sqlite:homelink.db";
+
+        try (Connection conn = DriverManager.getConnection(dbUrl)) {
+            String update = "UPDATE rental_terms SET status = ? WHERE listing_id = ? AND tenant_id = ?";
+            PreparedStatement stmt = conn.prepareStatement(update);
+            stmt.setString(1, newStatus);
+            stmt.setString(2, listingId);
+            stmt.setString(3, tenantId);
+            int rows = stmt.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    public static String getOwnerOfListing(String listingId) {
+        String query = "SELECT owner_id FROM listings WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, listingId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("owner_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
 }
