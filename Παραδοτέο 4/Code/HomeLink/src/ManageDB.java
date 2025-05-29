@@ -510,5 +510,47 @@ public class ManageDB {
         return userIds;
     }
 
+    public static void saveNotification(Notification notification) {
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
+            String sql = "INSERT INTO notifications (listing_id, message, recipient_id) VALUES (?, ?, ?)";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
 
+            for (String recipient : notification.getRecipients()) {
+                pstmt.setString(1, notification.getListingId());
+                pstmt.setString(2, notification.getMessage());
+                pstmt.setString(3, recipient);
+                pstmt.addBatch();
+            }
+
+            pstmt.executeBatch();
+            System.out.println("\n[📨] Notification(s) saved to database.");
+
+        } catch (SQLException e) {
+            System.out.println("\n[❌] Failed to save notification.");
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void saveRentalTerms(RentalTerms rental) {
+        String dbUrl = "jdbc:sqlite:homelink.db";
+
+        try (Connection conn = DriverManager.getConnection(dbUrl)) {
+            String insert = "INSERT INTO rental_terms (listing_id, tenant_id, price, duration_months) VALUES (?, ?, ?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(insert);
+
+            for (String tenantId : rental.getTenantIds()) {
+                stmt.setString(1, rental.getListingId());
+                stmt.setString(2, tenantId);
+                stmt.setDouble(3, rental.getPrice());
+                stmt.setInt(4, rental.getDurationInMonths());
+                stmt.executeUpdate();
+            }
+
+            System.out.println("\n💾 Rental terms saved to database.");
+        } catch (SQLException e) {
+            System.err.println("\n❌ Σφάλμα αποθήκευσης rental terms στη βάση:");
+            e.printStackTrace();
+        }
+    }
 }

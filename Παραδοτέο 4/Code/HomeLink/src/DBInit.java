@@ -17,6 +17,26 @@ public class DBInit {
             stmt.execute("INSERT OR IGNORE INTO users (user_id, trust_score) VALUES ('owner3', 60)");
             stmt.execute("INSERT OR IGNORE INTO users (user_id, trust_score) VALUES ('anna', 95)");
 
+            stmt.execute("CREATE TABLE IF NOT EXISTS notifications (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "listing_id TEXT," +
+                    "message TEXT," +
+                    "recipient_id TEXT," +
+                    "timestamp DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                    "FOREIGN KEY(listing_id) REFERENCES listings(id))");
+
+
+            stmt.execute("CREATE TABLE IF NOT EXISTS rental_terms (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "listing_id TEXT NOT NULL," +
+                    "tenant_id TEXT NOT NULL," +
+                    "price REAL NOT NULL," +
+                    "duration_months INTEGER NOT NULL," +
+                    "timestamp DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                    "FOREIGN KEY(listing_id) REFERENCES listings(id)," +
+                    "FOREIGN KEY(tenant_id) REFERENCES users(user_id))");
+
+
             // Δημιουργία πίνακα αγγελιών με πεδίο 'address' και 'active'
             stmt.execute("CREATE TABLE IF NOT EXISTS listings (" +
                     "id TEXT PRIMARY KEY," +
