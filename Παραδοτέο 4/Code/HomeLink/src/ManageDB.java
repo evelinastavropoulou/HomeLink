@@ -553,4 +553,34 @@ public class ManageDB {
             e.printStackTrace();
         }
     }
+
+    public static List<RentalTerms> queryPendingRentalRequests(String userId) {
+        List<RentalTerms> results = new ArrayList<>();
+        String dbUrl = "jdbc:sqlite:homelink.db";
+
+        try (Connection conn = DriverManager.getConnection(dbUrl)) {
+            String query = "SELECT listing_id, price, duration_months FROM rental_terms WHERE tenant_id = ? AND accepted = 0";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String listingId = rs.getString("listing_id");
+                double price = rs.getDouble("price");
+                int duration = rs.getInt("duration_months");
+
+                List<String> tenants = new ArrayList<>();
+                tenants.add(userId);
+
+                RentalTerms rental = new RentalTerms(listingId, tenants, price, duration);
+                results.add(rental);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return results;
+    }
+
+
 }

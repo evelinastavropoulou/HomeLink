@@ -49,7 +49,9 @@ public class MainScreen {
             System.out.println("1. Δημιουργία Αγγελίας");
             System.out.println("2. Αναζήτηση Κατοικίας");
             System.out.println("3. Διαχείριση Δηλώσεων Ενδιαφέροντος");  // <-- ΝΕΟ
-            System.out.println("4. Αποσύνδεση (Logout)");
+            System.out.println("4. Αποδοχή Όρων Ενοικίασης"); // <-- ΝΕΟ
+            System.out.println("5. Αποσύνδεση (Logout)");
+
             System.out.println("0. Έξοδος");
             System.out.print("Επιλογή: ");
 
@@ -67,6 +69,10 @@ public class MainScreen {
                     owner.onInterestDeclarationsClicked(this, owner.getId()); // <-- ΝΕΟ
                     break;
                 case 4:
+                    onAcceptRentalClicked(); // <-- νέα μέθοδος
+                    break;
+
+                case 5:
                     logout();
                     break;
                 case 0:
@@ -87,6 +93,10 @@ public class MainScreen {
 
     public void onCreateListingClicked(String ownerID) {
         listingManager.initiateListingCreation(ownerID);
+    }
+
+    public void onAcceptRentalClicked() {
+        RentalApplicationManager.loadPendingRequests(this, owner.getId());
     }
 
     public void displayMessage(String message) {

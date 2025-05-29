@@ -28,4 +28,8 @@ public class RentalTerms {
     public int getDurationInMonths() {
         return durationInMonths;
     }
+
+    public static List<RentalTerms> getPendingRentalRequests(String userId) {
+        return ManageDB.queryPendingRentalRequests(userId);
+    }
 }
