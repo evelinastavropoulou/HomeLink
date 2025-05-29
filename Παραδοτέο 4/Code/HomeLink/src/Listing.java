@@ -1,5 +1,8 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.sql.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Listing {
     private String id;
@@ -52,16 +55,6 @@ public class Listing {
         this.isActive = isActive;
     }
 
-    public static List<Listing> fetchListings(SearchHousingForm criteria) {
-        return ManageDB.queryListings(criteria);
-    }
-
-    public String[] getTypeAndCapacity() {
-        String typeDescription = canShare ? "Shared" : "Private";
-        String capacityDescription = canShare ? String.valueOf(maxRoommates) : "1";
-
-        return new String[] { typeDescription, capacityDescription };
-    }
 
     public double getLatitude() { return latitude; }
     public double getLongitude() { return longitude; }
@@ -101,6 +94,25 @@ public class Listing {
         return active;
     }
 
+    public static void updateListingStatus(String listingId, boolean active, boolean archived) {
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
+            String sql = "UPDATE listings SET active = ?, archived = ? WHERE id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setBoolean(1, active);
+            stmt.setBoolean(2, archived);
+            stmt.setString(3, listingId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static List<Listing> fetchListings(SearchHousingForm criteria) {
+        return ManageDB.queryListings(criteria);
+    }
+
+
     public void computeSuitabilityScore(SearchHousingForm criteria) {
         double score = 100.0;
 
@@ -124,6 +136,17 @@ public class Listing {
     }
 
 
+    public String[] getTypeAndCapacity() {
+        String typeDescription = canShare ? "Shared" : "Private";
+        String capacityDescription = canShare ? String.valueOf(maxRoommates) : "1";
+
+        return new String[] { typeDescription, capacityDescription };
+    }
+
+    public static void markAsUnavailable(String listingId) {
+        ManageDB.updateListingAvailability(listingId, false);
+    }
+
     @Override
     public String toString() {
         return "ID: " + id +
@@ -138,8 +161,11 @@ public class Listing {
                 ", Ενεργή: " + (isActive ? "Ναι" : "Όχι");
     }
 
-    public static void markAsUnavailable(String listingId) {
-        ManageDB.updateListingAvailability(listingId, false);
+    private Photos photos = new Photos();
+
+    public void attachPhotos(List<String> photoPaths) {
+        photos.attachPhotos(photoPaths);
     }
+
 
 }

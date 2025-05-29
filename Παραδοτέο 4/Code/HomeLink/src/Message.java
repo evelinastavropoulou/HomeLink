@@ -4,7 +4,7 @@ public class Message {
     }
 
     public static String createErrorMessage(String message) {
-        System.out.println("\n[ERROR] " + message);
+        System.out.println("[ERROR] " + message);
         return message;
     }
 

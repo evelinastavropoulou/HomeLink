@@ -1,3 +1,4 @@
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class MainScreen {
@@ -26,18 +27,17 @@ public class MainScreen {
     }
 
     public void loginFlow() {
-        displayTitle("Σύστημα Σύνδεσης");
         while (!loggedIn) {
-            System.out.print("Εισάγετε το Owner ID: ");
-            String inputID = scanner.nextLine();
+            System.out.print("\n🔑 Εισάγετε το Owner ID: ");
+            String inputID = scanner.nextLine().trim();
 
             if (ManageDB.isValidOwner(inputID)) {
-                ManageDB.setLoggedInOwner(inputID);   // <-- Αποθηκεύει τον συνδεδεμένο χρήστη
-                this.owner = new Owner(inputID);      // <-- Δημιουργεί αντικείμενο Owner
+                ManageDB.setLoggedInOwner(inputID);   // Αποθηκεύει τον συνδεδεμένο χρήστη
+                this.owner = new Owner(inputID);      // Δημιουργεί αντικείμενο Owner
                 loggedIn = true;
-                displayMessage("Σύνδεση επιτυχής με ID: " + inputID);
+                displayMessage("✅ Σύνδεση επιτυχής! Καλώς ήρθες, " + inputID + "!");
             } else {
-                displayMessage("Μη έγκυρο Owner ID. Δοκιμάστε ξανά.");
+                displayMessage("❌ Μη έγκυρο Owner ID. Δοκιμάστε ξανά.");
             }
         }
     }
@@ -45,44 +45,44 @@ public class MainScreen {
 
     public void showMainMenu() {
         while (loggedIn) {
-            displayTitle("Αρχική Οθόνη");
-            System.out.println("1. Δημιουργία Αγγελίας");
-            System.out.println("2. Αναζήτηση Κατοικίας");
-            System.out.println("3. Διαχείριση Δηλώσεων Ενδιαφέροντος");  // <-- ΝΕΟ
-            System.out.println("4. Αποδοχή Όρων Ενοικίασης"); // <-- ΝΕΟ
-            System.out.println("5. Οριστικοποίηση Ενοικίασης"); // <-- ΝΕΟ
-            System.out.println("6. Αποσύνδεση (Logout)");
+            displayTitle("🏠 Κεντρικό Μενού HomeLink");
 
-            System.out.println("0. Έξοδος");
-            System.out.print("Επιλογή: ");
+            System.out.println("╔═════════════════════════════════════════╗");
+            System.out.println("║                ΕΠΙΛΟΓΕΣ                 ║");
+            System.out.println("╠═════════════════════════════════════════╣");
+            System.out.println("║ 1. ➕ Δημιουργία Αγγελίας               ║");
+            System.out.println("║ 2. 🔍 Αναζήτηση Κατοικίας               ║");
+            System.out.println("║ 3. 📬 Διαχείριση Δηλώσεων Ενδιαφέροντος ║");
+            System.out.println("║ 4. ✅ Αποδοχή Όρων Ενοικίασης           ║");
+            System.out.println("║ 5. 📄 Οριστικοποίηση Ενοικίασης         ║");
+            System.out.println("║ 6. 🔓 Αποσύνδεση (Logout)               ║");
+            System.out.println("╠═════════════════════════════════════════╣");
+            System.out.println("║ 0. ❌ Έξοδος                            ║");
+            System.out.println("╚═════════════════════════════════════════╝");
+            System.out.print("📌 Επιλογή σας: ");
 
-            int choice = scanner.nextInt();
-            scanner.nextLine(); // consume newline
+            int choice;
+            try {
+                choice = scanner.nextInt();
+                scanner.nextLine(); // consume newline
+            } catch (InputMismatchException e) {
+                System.out.println("❗ Παρακαλώ δώστε αριθμό επιλογής.");
+                scanner.nextLine(); // flush
+                continue;
+            }
 
             switch (choice) {
-                case 1:
-                    owner.onCreateListingClicked(this);
-                    break;
-                case 2:
-                    owner.onSearchHousingClicked(this, owner.getId());
-                    break;
-                case 3:
-                    owner.onInterestDeclarationsClicked(this, owner.getId()); // <-- ΝΕΟ
-                    break;
-                case 4:
-                    onAcceptRentalClicked(); // <-- νέα μέθοδος
-                    break;
-                case 5:
-                    onFinalizeRentalClicked(owner.getId()); // <-- νέα μέθοδος
-                    break;
-                case 6:
-                    logout();
-                    break;
-                case 0:
-                    System.out.println("Έξοδος.");
+                case 1 -> owner.onCreateListingClicked(this);
+                case 2 -> owner.onSearchHousingClicked(this, owner.getId());
+                case 3 -> owner.onInterestDeclarationsClicked(this, owner.getId());
+                case 4 -> onAcceptRentalClicked();
+                case 5 -> onFinalizeRentalClicked(owner.getId());
+                case 6 -> logout();
+                case 0 -> {
+                    System.out.println("👋 Έξοδος από το σύστημα.");
                     System.exit(0);
-                default:
-                    System.out.println("Μη έγκυρη επιλογή.");
+                }
+                default -> System.out.println("❌ Μη έγκυρη επιλογή. Δοκιμάστε ξανά.");
             }
         }
     }
@@ -113,4 +113,18 @@ public class MainScreen {
     public void displayTitle(String title) {
         System.out.println("\n--- " + title + " ---");
     }
+
+    public static void clearConsole() {
+        try {
+            if (System.getProperty("os.name").contains("Windows")) {
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ Αδυναμία εκκαθάρισης οθόνης.");
+        }
+    }
+
 }

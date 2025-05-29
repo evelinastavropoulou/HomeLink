@@ -14,62 +14,60 @@ public class CreateListingScreen {
     }
 
     public void displayCreateListingScreen(String ownerID) {
-        displayTitle("Οθόνη Δημιουργίας Αγγελίας");
-        manager.completeListingCreation(ownerID);
-    }
-
-    public void displayMessage(String message) {
-        System.out.println("[Μήνυμα]: " + message);
-    }
-
-    public void displayTitle(String title) {
-        System.out.println("\n--- " + title + " ---");
+        System.out.print("\n📝 Οθόνη Δημιουργίας Νέας Αγγελίας");
     }
 
     public void showArchiveOptions(List<Listing> listings) {
-        displayTitle("Αρχειοθέτηση Αγγελίας");
-        System.out.println("Έχετε υπερβεί το όριο ενεργών αγγελιών.");
-        System.out.println("Επιλέξτε αγγελία προς αρχειοθέτηση ή 0 για ακύρωση:");
+        System.out.print("\n📁 Αρχειοθέτηση Αγγελίας");
+
+        System.out.println("\n⚠️ Έχετε υπερβεί το όριο ενεργών αγγελιών.");
+        System.out.println("📌 Επιλέξτε αγγελία προς αρχειοθέτηση ή πληκτρολογήστε 0 για ακύρωση:\n");
 
         for (int i = 0; i < listings.size(); i++) {
-            System.out.println((i + 1) + ". " + listings.get(i));
+            System.out.println("  " + (i + 1) + ". " + listings.get(i));
         }
 
+        System.out.print("\n🔢 Επιλογή: ");
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Επιλογή: ");
         int choice = scanner.nextInt();
 
         if (choice == 0) {
             cancelListingArchive();
-            manager.cancelListingCreation();  // επιστροφή στη MainScreen
+            manager.cancelListingCreation();  // επιστροφή στην αρχική οθόνη
         } else if (choice >= 1 && choice <= listings.size()) {
             Listing listingToArchive = listings.get(choice - 1);
-
-            listingToArchive.setArchived(true);
-            listingToArchive.setActive(false);
-
-            try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
-                System.out.println(listingToArchive);
-
-                ManageDB.updateListingStatusWithConnection(conn, listingToArchive);
-
-                //RentalInterest.deleteAssociatedInterestsWithConnection(conn, listing.getId());
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-
-
-            // Διαγραφή δηλώσεων ενδιαφέροντος
-            //RentalInterest.deleteAssociatedInterests(listingToArchive.getId());
-
-
-            // Εμφάνιση μηνύματος επιτυχίας
-            Message.createMessage(listingToArchive.getId(), "Archived");
-            manager.displayToMainScreen("Η αγγελία " + listingToArchive.getId() + " αρχειοθετήθηκε.");
+            archiveListing(listingToArchive.getId());
         } else {
-            System.out.println("Μη έγκυρη επιλογή.");
+            System.out.println("❌ Μη έγκυρη επιλογή.");
         }
     }
+
+
+    public void displayMessage(String message) {
+        System.out.println("\n📢 [Μήνυμα]: " + message + "\n");
+    }
+
+
+    private void archiveListing(String listingId) {
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
+            // 1. Ενημέρωση κατάστασης στην Listing
+            Listing.updateListingStatus(listingId, false, true);  // active = false, archived = true
+
+            // 2. Λήψη ενδιαφερόντων
+            List<String> interestIds = RentalInterest.getRentalInterests(listingId);
+
+            // 3. Διαγραφή ενδιαφερόντων
+            ManageDB.deleteAssociatedInterests(listingId);
+
+            // 4. Μήνυμα
+            Message.createMessage(listingId, "Archived");
+            displayMessage("Η αγγελία " + listingId + " αρχειοθετήθηκε.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            displayMessage("❌ Σφάλμα κατά την αρχειοθέτηση.");
+        }
+    }
+
 
     public void cancelListingArchive() {
         System.out.println("[Ακύρωση] Δεν έγινε καμία αλλαγή.");

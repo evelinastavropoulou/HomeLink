@@ -10,7 +10,9 @@ public class CreateListingManager {
     }
 
     public void initiateListingCreation(String ownerID) {
-        screen.displayTitle("Έλεγχος Αγγελιών");
+        System.out.print("🔎 Έλεγχος Αγγελιών Σε Εξέλιξη...");
+
+        simulateLoading("Εντοπισμός ενεργών αγγελιών");
 
         List<Listing> listings = db.getListingsForOwner(ownerID);
         List<Listing> active = Listing.filterActiveListings(listings);
@@ -21,9 +23,7 @@ public class CreateListingManager {
         }
 
         screen.displayCreateListingScreen(ownerID); // Κανονική ροή
-    }
 
-    public void completeListingCreation(String ownerID) {
         Listing newListing = CreateListingForm.fillListingForm();
 
         newListing.setOwnerID(ManageDB.getLoggedInOwner());  // <-- πολύ σημαντικό
@@ -41,7 +41,7 @@ public class CreateListingManager {
             return;
         }
 
-        screen.displayTitle("Μεταφόρτωση Φωτογραφιών");
+        System.out.print("\nΜεταφόρτωση Φωτογραφιών");
         List<String> photos = UploadPhotoForm.uploadPhotos();
 
         // Επιστροφή μη έγκυρων φωτογραφιών
@@ -55,20 +55,31 @@ public class CreateListingManager {
             screen.displayMessage("Κάποιες φωτογραφίες αγνοήθηκαν:\n" + String.join(", ", invalidPhotos));
         }
 
-// Αν μετά την αφαίρεση δεν υπάρχει καμία φωτογραφία, ακυρώνουμε
+        // Αν μετά την αφαίρεση δεν υπάρχει καμία φωτογραφία, ακυρώνουμε
         if (photos.isEmpty()) {
             Message.createErrorMessage("Δεν υπάρχουν έγκυρες φωτογραφίες (.jpg, .png).");
             screen.displayMessage("Δεν υπάρχουν έγκυρες φωτογραφίες (.jpg, .png).");
             return;
         }
 
+        // 👉 Προσθήκη των φωτογραφιών στο listing ΠΡΙΝ την αποθήκευση
+        newListing.attachPhotos(photos); // Το "photos" εδώ είναι η λίστα με τα paths από UploadPhotoForm
 
         db.saveListing(newListing);
+
         Message.createSuccessMessage("Η αγγελία καταχωρήθηκε με επιτυχία.");
         screen.displayMessage("Η αγγελία καταχωρήθηκε με επιτυχία.");
         LocationManager.triggerLocationEntry(newListing.getId());
     }
 
+    private boolean checkListingLimit(List<Listing> activeListings) {
+        return activeListings.size() <= 3;
+    }
+
+    public void cancelListingCreation() {
+        // λογική για επιστροφή στην MainScreen (αν υπάρχει)
+        // προς το παρόν: dummy
+    }
 
     private boolean validateRoommateCompatibility(Listing listing) {
         return listing.getMaxRoommates() <= listing.getRooms();
@@ -85,17 +96,18 @@ public class CreateListingManager {
     }
 
 
-    private boolean checkListingLimit(List<Listing> activeListings) {
-        return activeListings.size() < 3;
+    private void simulateLoading(String task) {
+        System.out.print("\n⏳ " + task);
+        try {
+            for (int i = 0; i < 3; i++) {
+                Thread.sleep(400);
+                System.out.print(".");
+            }
+            System.out.println(" ✔️");
+        } catch (InterruptedException e) {
+            System.out.println(" ⚠️ [Διακοπή]");
+        }
     }
 
-    public void cancelListingCreation() {
-        // λογική για επιστροφή στην MainScreen (αν υπάρχει)
-        // προς το παρόν: dummy
-    }
-
-    public void displayToMainScreen(String message) {
-        screen.displayMessage(message);
-    }
 
 }

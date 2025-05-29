@@ -2,6 +2,8 @@ public class SearchHousingForm {
     private String location;
     private String type;
     private boolean canShare;
+    private int rooms;
+    private String preferredFloor;
 
     public boolean validateSearchForm() {
         return location != null && !location.isEmpty() &&
@@ -11,6 +13,9 @@ public class SearchHousingForm {
     public Boolean getCanShare() {
         return canShare;
     }
+
+    public void setRooms(int rooms) { this.rooms = rooms; }
+    public void setPreferredFloor(String floor) { this.preferredFloor = floor; }
 
     // Getters and Setters
     public String getLocation() { return location; }
@@ -22,3 +27,4 @@ public class SearchHousingForm {
     public boolean isCanShare() { return canShare; }
     public void setCanShare(boolean canShare) { this.canShare = canShare; }
 }
+

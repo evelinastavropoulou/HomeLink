@@ -9,30 +9,50 @@ public class SearchHousingScreen {
         this.manager = manager;
     }
 
-    public void displaySearchResults(List<Listing> listings) {
-        System.out.println("\n=== Αποτελέσματα Αναζήτησης ===");
-        for (Listing l : listings) {
-            System.out.println(l);
-        }
-    }
-
     public void displaySearchForm(SearchHousingForm form, String userID) {
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("Εισάγετε περιοχή:");
-        form.setLocation(sc.nextLine());
+        System.out.println("\n🏡 Φόρμα Αναζήτησης Κατοικίας");
+        System.out.println("─────────────────────────────────────");
 
-        System.out.println("Εισάγετε τύπο κατοικίας (π.χ. Studio, Διαμέρισμα):");
-        form.setType(sc.nextLine());
+        System.out.print("📍 Περιοχή ενδιαφέροντος: ");
+        form.setLocation(sc.nextLine().trim());
 
-        System.out.println("Επιθυμείτε δυνατότητα συγκατοίκησης; (ναι/όχι):");
+        System.out.print("🏠 Τύπος κατοικίας (π.χ. Studio, Διαμέρισμα): ");
+        form.setType(sc.nextLine().trim());
+
+        System.out.print("👥 Επιθυμείτε δυνατότητα συγκατοίκησης; (ναι/όχι): ");
         String input = sc.nextLine().trim().toLowerCase();
         form.setCanShare(input.equals("ναι"));
 
-        manager.loadUserPreferences(form, userID); // συνεχίζει με preferences check
+        // Καλείται αμέσως μετά για έξτρα κριτήρια
+        fillSearchCriteria(form,userID);
     }
 
-    public void askToApplyPreferences(UserPreferences prefs, SearchHousingForm form) {
+
+    public void fillSearchCriteria(SearchHousingForm form,String userID) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("🛏️ Επιθυμητός αριθμός δωματίων: ");
+        try {
+            form.setRooms(Integer.parseInt(sc.nextLine().trim()));
+        } catch (NumberFormatException e) {
+            System.out.println("⚠️ Μη έγκυρη είσοδος. Ορίστηκε αριθμός δωματίων σε 0.");
+            form.setRooms(0);
+        }
+
+        System.out.println("─────────────────────────────────────");
+        System.out.println("🔎 Εκτέλεση αναζήτησης...\n");
+
+        // ✅ Κατευθείαν προώθηση στο search handler
+        manager.handleSearchCriteria(form, userID);
+    }
+
+    public void displayMessage(String msg) {
+        System.out.println("[Μήνυμα]: " + msg);
+    }
+
+    public void askToApplyPreferences(UserPreferences prefs, SearchHousingForm form, String userID) {
         System.out.println("📁 Εντοπίστηκαν αποθηκευμένες προτιμήσεις:");
         System.out.println("- Περιοχή: " + prefs.getLocation());
         System.out.println("- Τύπος: " + prefs.getType());
@@ -43,23 +63,20 @@ public class SearchHousingScreen {
         String answer = sc.nextLine().trim().toLowerCase();
 
         if (answer.equals("ναι")) {
-            acceptFilters(prefs); // αποδοχή από την οθόνη
+            acceptFilters(prefs, userID);
         } else {
-            declineFilters(form); // απόρριψη και συνέχιση με τη φόρμα
+            declineFilters(form, userID);
         }
     }
 
-    public void acceptFilters(UserPreferences prefs) {
-        manager.applyPreferences(prefs); // μόνο prefs, νέα form θα φτιαχτεί μέσα στον manager
+    public void acceptFilters(UserPreferences prefs, String userID) {
+        manager.applyPreferences(prefs, userID);
     }
 
-    public void declineFilters(SearchHousingForm form) {
-        manager.continueWithoutPreferences(form); // συνεχίζει κανονικά με τη φόρμα
+    public void declineFilters(SearchHousingForm form, String userID) {
+        manager.continueWithoutPreferences(form, userID);
     }
 
-    public void displayMessage(String msg) {
-        System.out.println("[Μήνυμα]: " + msg);
-    }
 
     public void displayMap(List<Marker> markers) {
         System.out.println("\n🗺️ Χάρτης Αγγελιών:");

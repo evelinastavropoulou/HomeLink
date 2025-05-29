@@ -1,43 +1,12 @@
 import java.util.*;
 
 public class SearchHousingManager {
+
     private SearchHousingScreen screen;
 
     public void setScreen(SearchHousingScreen screen) {
         this.screen = screen;
     }
-
-
-    public void loadUserPreferences(SearchHousingForm form, String userID) {
-
-        if (!form.validateSearchForm()) {
-            Message.createErrorMessage("Empty Required Fields");
-            screen.displayMessage("Empty Required Fields");
-            return;
-        }
-
-        UserPreferences prefs = ManageDB.getUserPreferences(userID);
-
-        if (prefs != null) {
-            screen.askToApplyPreferences(prefs, form);
-        } else {
-            continueWithoutPreferences(form); // νέα μέθοδος, απλό forward
-        }
-    }
-
-    public void continueWithoutPreferences(SearchHousingForm form) {
-        handleSearchCriteria(form);
-    }
-
-    public void applyPreferences(UserPreferences prefs) {
-        SearchHousingForm form = new SearchHousingForm();
-        form.setLocation(prefs.getLocation());
-        form.setType(prefs.getType());
-        form.setCanShare(prefs.isCanShare());
-
-        handleSearchCriteria(form);
-    }
-
 
     public void initiateSearchHousing(String userID) {
         SearchHousingForm form = new SearchHousingForm();
@@ -45,16 +14,39 @@ public class SearchHousingManager {
     }
 
 
-    public void handleSearchCriteria(SearchHousingForm form) {
-        if (!form.validateSearchForm()) {
-            Message.createErrorMessage("Empty Required Fields");
-            screen.displayMessage("Empty Required Fields");
-            return;
-        }
+    public void loadUserPreferences(SearchHousingForm form, String userID) {
 
+        UserPreferences prefs = ManageDB.getUserPreferences(userID);
+
+        if (prefs != null) {
+            screen.askToApplyPreferences(prefs,form,userID);
+        } else {
+            continueWithoutPreferences(form,userID); // νέα μέθοδος, απλό forward
+        }
+    }
+
+    public void applyPreferences(UserPreferences prefs, String userID) {
+        SearchHousingForm form = new SearchHousingForm();
+        form.setLocation(prefs.getLocation());
+        form.setType(prefs.getType());
+        form.setCanShare(prefs.isCanShare());
+        executeSearch(form);  // ✅ Εκτελεί κατευθείαν την αναζήτηση
+    }
+
+
+    public void continueWithoutPreferences(SearchHousingForm form, String userID) {
         executeSearch(form);
     }
 
+
+    public void handleSearchCriteria(SearchHousingForm form, String userID) {
+        if (!form.validateSearchForm()) {
+            Message.createErrorMessage("❌ Ανεπαρκή στοιχεία αναζήτησης.");
+            screen.displayMessage("⚠️ Παρακαλώ συμπληρώστε όλα τα απαιτούμενα πεδία πριν συνεχίσετε.");
+            return;
+        }
+        loadUserPreferences(form, userID);
+    }
 
 
     public void executeSearch(SearchHousingForm criteria) {
@@ -112,7 +104,6 @@ public class SearchHousingManager {
             screen.displaySearchResults(results, markers);
         }
     }
-
 
 
     public void broadenSearch() {
