@@ -30,4 +30,8 @@ public class CreateListingForm {
 
         return new Listing(UUID.randomUUID().toString(), type, size, price, floor, rooms, canShare, maxRoommates);
     }
+
+    public static boolean validateRequiredFields(Listing listing) {
+        return listing != null && listing.getMaxRoommates() > 0;
+    }
 }

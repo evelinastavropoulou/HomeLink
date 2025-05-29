@@ -1,8 +1,10 @@
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 
 public class UploadPhotoForm {
+
     public static List<String> uploadPhotos() {
         Scanner sc = new Scanner(System.in);
         List<String> photos = new ArrayList<>();
@@ -21,4 +23,9 @@ public class UploadPhotoForm {
 
         return photos;
     }
+
+    public static void removeInvalidPhotos(List<String> allPhotos, List<String> invalidPhotos) {
+        allPhotos.removeAll(invalidPhotos);
+    }
+
 }

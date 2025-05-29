@@ -29,7 +29,7 @@ public class CreateListingManager {
         newListing.setOwnerID(ManageDB.getLoggedInOwner());  // <-- πολύ σημαντικό
 
 
-        if (!validateRequiredFields(newListing)) {
+        if (!CreateListingForm.validateRequiredFields(newListing)) {
             Message.createErrorMessage("Ο μέγιστος αριθμός συγκατοίκων πρέπει να είναι θετικός.");
             screen.displayMessage("Ο μέγιστος αριθμός συγκατοίκων πρέπει να είναι θετικός.");
             return;
@@ -44,11 +44,24 @@ public class CreateListingManager {
         screen.displayTitle("Μεταφόρτωση Φωτογραφιών");
         List<String> photos = UploadPhotoForm.uploadPhotos();
 
-        if (!validatePhotos(photos)) {
-            Message.createErrorMessage("Επιτρεπτοί τύποι είναι μόνο .jpg και .png.");
-            screen.displayMessage("Επιτρεπτοί τύποι είναι μόνο .jpg και .png.");
+        // Επιστροφή μη έγκυρων φωτογραφιών
+        List<String> invalidPhotos = validatePhotos(photos);
+
+        // Αν υπάρχουν μη έγκυρες, τις αφαιρούμε και ειδοποιούμε
+        if (!invalidPhotos.isEmpty()) {
+            UploadPhotoForm.removeInvalidPhotos(photos, invalidPhotos);
+
+            Message.createErrorMessage("Κάποιες φωτογραφίες δεν έγιναν δεκτές (.jpg, .png μόνο): " + invalidPhotos);
+            screen.displayMessage("Κάποιες φωτογραφίες αγνοήθηκαν:\n" + String.join(", ", invalidPhotos));
+        }
+
+// Αν μετά την αφαίρεση δεν υπάρχει καμία φωτογραφία, ακυρώνουμε
+        if (photos.isEmpty()) {
+            Message.createErrorMessage("Δεν υπάρχουν έγκυρες φωτογραφίες (.jpg, .png).");
+            screen.displayMessage("Δεν υπάρχουν έγκυρες φωτογραφίες (.jpg, .png).");
             return;
         }
+
 
         db.saveListing(newListing);
         Message.createSuccessMessage("Η αγγελία καταχωρήθηκε με επιτυχία.");
@@ -57,22 +70,20 @@ public class CreateListingManager {
     }
 
 
-    private boolean validateRequiredFields(Listing listing) {
-        return listing != null && listing.getMaxRoommates() > 0;
-    }
-
     private boolean validateRoommateCompatibility(Listing listing) {
         return listing.getMaxRoommates() <= listing.getRooms();
     }
 
-    private boolean validatePhotos(List<String> photos) {
+    private List<String> validatePhotos(List<String> photos) {
+        List<String> invalidPhotos = new ArrayList<>();
         for (String photo : photos) {
-            if (!photo.endsWith(".jpg") && !photo.endsWith(".png")) {
-                return false;
+            if (!photo.toLowerCase().endsWith(".jpg") && !photo.toLowerCase().endsWith(".png")) {
+                invalidPhotos.add(photo);
             }
         }
-        return true;
+        return invalidPhotos;
     }
+
 
     private boolean checkListingLimit(List<Listing> activeListings) {
         return activeListings.size() < 3;
