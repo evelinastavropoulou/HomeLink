@@ -3,6 +3,7 @@ import java.util.*;
 public class RentalRequestManager {
 
     public static void startRentalProcess(MainScreen screen, String ownerID) {
+
         List<Listing> listings = ManageDB.getListingsByOwner(ownerID);
 
         if (listings == null || listings.isEmpty()) {
@@ -10,25 +11,26 @@ public class RentalRequestManager {
             return;
         }
 
-        boolean foundInterest = RentalInterest.getListingInterests(listings);
-        if (!foundInterest) {
+        List<String> interests = RentalInterest.getListingInterests(listings);
+        if (interests.isEmpty()) {
             screen.displayMessage("[ERROR] No Interest Declarations Found.");
             return;
         }
-
+        
+        // 👉 Εδώ παίρνεις τα userIds από τις δηλώσεις
         List<String> userIds = RentalInterest.getUserIdsFromInterests(listings);
         if (userIds == null || userIds.isEmpty()) {
             screen.displayMessage("[ERROR] Δεν βρέθηκαν χρήστες με ενδιαφέρον.");
             return;
         }
 
+        // 👉 Τώρα παίρνεις τα trust scores
         Map<String, Integer> trustScores = TrustScore.getTrustScore(userIds);
 
-        screen.displayMessage("✅ Διαδικασία ενοικίασης ξεκίνησε. Βρέθηκαν οι εξής ενδιαφερόμενοι:\n");
-
-        // → Κλήση της νέας οθόνης εμφάνισης
+        // ✅ Από εδώ μπορείς να συνεχίσεις με εμφάνιση ή επιλογή χρηστών
         RentalRequestScreen requestScreen = new RentalRequestScreen();
-        requestScreen.displayDeclarations(trustScores, listings.get(0));
+        requestScreen.displayDeclarations(interests, userIds, trustScores);
+
     }
 
     public static void validateTenantSelection(Listing listing, List<String> selectedUsers, RentalRequestScreen screen) {

@@ -4,14 +4,18 @@ public class RentalRequestScreen {
 
     private Scanner scanner = new Scanner(System.in);
 
-    public List<String> displayDeclarations(Map<String, Integer> trustScores, Listing listing) {
-        System.out.println("Οι παρακάτω χρήστες εκδήλωσαν ενδιαφέρον:");
-        for (Map.Entry<String, Integer> entry : trustScores.entrySet()) {
-            System.out.println("- Χρήστης: " + entry.getKey() + ", Trust Score: " + entry.getValue());
+    public void displayDeclarations(List<String> interests, List<String> userIds, Map<String, Integer> trustScores) {
+        System.out.println(">>> Δηλώσεις Ενδιαφέροντος <<<");
+
+        for (String interest : interests) {
+            System.out.println("Δήλωση: " + interest);
         }
 
-        // Επιστροφή επιλεγμένων χρηστών με validation
-        return selectUsers(trustScores.keySet(), listing);
+        System.out.println("\n>>> Χρήστες με Ενδιαφέρον <<<");
+        for (String userId : userIds) {
+            int score = trustScores.getOrDefault(userId, 0);
+            System.out.println("Χρήστης: " + userId + " | Trust Score: " + score);
+        }
     }
 
 
@@ -35,6 +39,7 @@ public class RentalRequestScreen {
 
         return selectedUsers;
     }
+
 
 
     public void displayValidationResult(boolean isValid, String message) {

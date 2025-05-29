@@ -137,28 +137,40 @@ public class ManageDB {
     }
 
 
-    public static List<String> queryInterestsByListingId(String listingID) {
-        List<String> interests = new ArrayList<>();
-        String sql = "SELECT user_id, listing_id FROM interests WHERE listing_id = ?";
+    public static List<String> queryInterestsByListings(List<Listing> listings) {
+        List<String> results = new ArrayList<>();
+        String sql = "SELECT * FROM interests WHERE listing_id = ?";
 
         try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db");
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, listingID);
-            ResultSet rs = stmt.executeQuery();
+            for (Listing listing : listings) {
+                stmt.setString(1, listing.getId());
+                ResultSet rs = stmt.executeQuery();
 
-            while (rs.next()) {
-                String userId = rs.getString("user_id");
-                String lId = rs.getString("listing_id");
-                interests.add(userId + ";" + lId); // ή userId + " για " + lId αν θες για εμφάνιση
+                boolean headerAdded = false;
+
+                while (rs.next()) {
+                    if (!headerAdded) {
+                        results.add("\n[Αγγελία: " + listing.getId() + "]");
+                        headerAdded = true;
+                    }
+
+                    String userId = rs.getString("user_id");
+                    String listing_id = rs.getString("listing_id");
+                    String message = rs.getString("message");
+
+                    results.add("  - Listing: " + listing_id + " | Χρήστης: " + userId + " | Μήνυμα: " + message);
+                }
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return interests;
+        return results;
     }
+
 
 
     public List<Listing> getListingsForOwner(String ownerID) {
@@ -472,6 +484,31 @@ public class ManageDB {
         return trustScores;
     }
 
+    public static List<String> queryUserIdsFromInterests(List<Listing> listings) {
+        List<String> userIds = new ArrayList<>();
+        String sql = "SELECT DISTINCT user_id FROM interests WHERE listing_id = ?";
+
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db");
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            for (Listing listing : listings) {
+                stmt.setString(1, listing.getId());
+                ResultSet rs = stmt.executeQuery();
+
+                while (rs.next()) {
+                    String userId = rs.getString("user_id");
+                    if (!userIds.contains(userId)) {
+                        userIds.add(userId);
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return userIds;
+    }
 
 
 }
