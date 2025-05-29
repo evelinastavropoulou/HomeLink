@@ -559,7 +559,7 @@ public class ManageDB {
         String dbUrl = "jdbc:sqlite:homelink.db";
 
         try (Connection conn = DriverManager.getConnection(dbUrl)) {
-            String query = "SELECT listing_id, price, duration_months FROM rental_terms WHERE tenant_id = ? AND accepted = 0";
+            String query = "SELECT listing_id, price, duration_months, status FROM rental_terms WHERE tenant_id = ? AND accepted = 0";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, userId);
             ResultSet rs = stmt.executeQuery();
@@ -568,11 +568,12 @@ public class ManageDB {
                 String listingId = rs.getString("listing_id");
                 double price = rs.getDouble("price");
                 int duration = rs.getInt("duration_months");
+                String status = rs.getString("status");  // ✅ φέρνουμε το νέο πεδίο
 
                 List<String> tenants = new ArrayList<>();
                 tenants.add(userId);
 
-                RentalTerms rental = new RentalTerms(listingId, tenants, price, duration);
+                RentalTerms rental = new RentalTerms(listingId, tenants, price, duration, status);  // ✅ ενημερωμένος constructor
                 results.add(rental);
             }
         } catch (SQLException e) {
@@ -581,6 +582,7 @@ public class ManageDB {
 
         return results;
     }
+
 
 
     public static boolean updateRentalStatus(String listingId, String tenantId, String newStatus) {
@@ -615,6 +617,79 @@ public class ManageDB {
         }
         return null;
     }
+
+    public static List<RentalTerms> queryTemporaryRentals(String ownerId) {
+        List<RentalTerms> list = new ArrayList<>();
+
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:homelink.db")) {
+            String sql = "SELECT rt.listing_id, rt.tenant_id, rt.price, rt.duration_months, rt.status " +  // ✅ πρόσθεσε το status
+                    "FROM rental_terms rt " +
+                    "JOIN listings l ON rt.listing_id = l.id " +
+                    "WHERE l.owner_id = ? AND rt.status = 'accepted'";
+
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, ownerId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String listingId = rs.getString("listing_id");
+                String tenantId = rs.getString("tenant_id");
+                double price = rs.getDouble("price");
+                int duration = rs.getInt("duration_months");
+                String status = rs.getString("status");  // ✅ νέο πεδίο
+
+                RentalTerms rental = new RentalTerms(listingId, List.of(tenantId), price, duration, status);  // ✅ ενημερωμένος constructor
+                list.add(rental);
+            }
+        } catch (SQLException e) {
+            System.out.println("[❌] Σφάλμα κατά την ανάκτηση προσωρινών αιτήσεων.");
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public static boolean saveRentalContract(RentalTerms rental) {
+        String dbUrl = "jdbc:sqlite:homelink.db";
+
+        try (Connection conn = DriverManager.getConnection(dbUrl);
+             Statement stmt = conn.createStatement()) {
+
+            // Δημιουργία πίνακα αν δεν υπάρχει
+            stmt.execute("CREATE TABLE IF NOT EXISTS rental_contract (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "listing_id TEXT NOT NULL," +
+                    "tenant_id TEXT NOT NULL," +
+                    "price REAL NOT NULL," +
+                    "duration_months INTEGER NOT NULL," +
+                    "generated_pdf_path TEXT," +
+                    "created_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                    "FOREIGN KEY(listing_id) REFERENCES listings(id)," +
+                    "FOREIGN KEY(tenant_id) REFERENCES users(user_id))");
+
+            String insertSql = "INSERT INTO rental_contract (listing_id, tenant_id, price, duration_months, generated_pdf_path) " +
+                    "VALUES (?, ?, ?, ?, ?)";
+
+            try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                insertStmt.setString(1, rental.getListingId());
+                insertStmt.setString(2, rental.getTenantIds().get(0));
+                insertStmt.setDouble(3, rental.getPrice());
+                insertStmt.setInt(4, rental.getDurationInMonths());
+                insertStmt.setString(5, "path/to/pdf/generated_contract.pdf"); // ή null αν δεν υπάρχει ακόμα
+
+                insertStmt.executeUpdate();
+                return true;
+            }
+
+        } catch (SQLException e) {
+            System.out.println("[❌] Αποτυχία αποθήκευσης συμβολαίου.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+
 
 
 }

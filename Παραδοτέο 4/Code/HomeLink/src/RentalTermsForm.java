@@ -18,7 +18,7 @@ public class RentalTermsForm {
             highlightInvalidFormFields();
             String error = Message.createErrorMessage("Μη έγκυρη τιμή ή διάρκεια. Παρακαλώ δοκιμάστε ξανά.");
             screen.displayMessage(error);
-            return null;  // ❗ Επιστρέφει null αν αποτύχει η επικύρωση
+            return null;
         }
 
         double price = Double.parseDouble(priceInput);
@@ -30,8 +30,11 @@ public class RentalTermsForm {
         System.out.println("Τιμή: " + price + " €");
         System.out.println("Διάρκεια: " + duration + " μήνες");
 
-        return new RentalTerms(listing.getId(), selectedUsers, price, duration);  // ✅ Επιστροφή έτοιμου αντικειμένου
+        String status = "accepted";  // ✅ Προεπιλεγμένο status για νέο RentalTerms
+
+        return new RentalTerms(listing.getId(), selectedUsers, price, duration, status);
     }
+
 
 
     private boolean validateFormFields(String priceStr, String durationStr) {

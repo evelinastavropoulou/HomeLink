@@ -26,6 +26,19 @@ public class DBInit {
                     "FOREIGN KEY(listing_id) REFERENCES listings(id))");
 
 
+            // Δημιουργία πίνακα αν δεν υπάρχει
+            stmt.execute("CREATE TABLE IF NOT EXISTS rental_contract (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "listing_id TEXT NOT NULL," +
+                    "tenant_id TEXT NOT NULL," +
+                    "price REAL NOT NULL," +
+                    "duration_months INTEGER NOT NULL," +
+                    "generated_pdf_path TEXT," +
+                    "created_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                    "FOREIGN KEY(listing_id) REFERENCES listings(id)," +
+                    "FOREIGN KEY(tenant_id) REFERENCES users(user_id))");
+
+
             stmt.execute("CREATE TABLE IF NOT EXISTS rental_terms (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "listing_id TEXT NOT NULL," +
