@@ -33,15 +33,6 @@ Built using **JavaFX** (UI) and **JDBC** (database connectivity) under an **MVC 
 
 ---
 
-## 🚀 How to Run
-
-```bash
-git clone https://github.com/evelinastavropoulou/HomeLink.git
-```
-
-Open the project in your IDE and run `Main.java`.
-
----
 
 ## 📊 Deliverables
 
@@ -51,12 +42,6 @@ Open the project in your IDE and run `Main.java`.
 
 ---
 
-## 👩‍💻 Author
-
-**Evelina Stavropoulou**
-Department of Computer Engineering and Informatics, University of Patras
-
----
 
 ## 🧾 License
 
